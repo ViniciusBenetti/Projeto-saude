@@ -70,9 +70,8 @@ App{
 
 
         AppPage{
-
-
-
+            property int modeloSalvo: 0
+            id:pagina
             titleItem: Text{
             font.pixelSize: 24 
             color: "white"
@@ -98,6 +97,10 @@ App{
          iconType: IconType.filter 
          color: "gray"
          scale: 1.5
+         onClicked:{
+            titulo.text = "Ordenar exames"
+            popup2.open()
+         }
     }
 
     AppTextField {
@@ -119,6 +122,40 @@ App{
          iconType: IconType.search
          color: "gray"
          anchors.left: textoedit.right
+         onClicked:{
+            var dados = storage.getValue("dados-salvos")
+       
+                    if(JSON.parse(dados).length > 1){
+                        var parseDados = JSON.parse(dados)
+                        
+                        listaEX.model.clear()
+                        radio1.checked = false 
+                        radio2.checked = false 
+                        radio3.checked = false 
+                        radio4.checked = false
+
+                        for (var i = 0; i < parseDados.length; ++i) {
+                        listaEX.model.append({title: parseDados[i]["nome-exame"],
+                body:"<br/>"+parseDados[i]["data-exame"]+
+                            "<br/>doutor: "+parseDados[i]["nome-doutor"] +
+                            "<br/>ver detalhes..."
+        
+                    });
+                    }
+               for (var i = 0; i < parseDados.length; ++i) {
+                    var item = listaEX.model.get(i);
+                    if(item.title != textoedit.text){
+
+                        listaEX.itemAt(i,0).visible = false;
+                    }
+                    if(item.title == textoedit.text){
+                       listaEX.itemAt(i,0).visible = true;
+                    }
+    
+                }
+                }
+            
+         }
     }
 
 }Popup{
@@ -130,7 +167,7 @@ App{
       height: 450
       modal: true
       focus: true
-      closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
+      closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
         background: Rectangle {
         border.color: "gray"
         radius: 20
@@ -146,6 +183,198 @@ App{
         font.family: roboto.font
         font.pixelSize: 20
 
+    }
+    Column {
+        anchors.top: parent.top  
+        anchors.topMargin: 70
+        
+        RadioButton {
+        id: radio1
+        width: 40
+        height: 30
+        anchors.top: parent.top 
+        anchors.topMargin:50
+        contentItem: Text {
+        text: "por exame"
+        color: "white" 
+        anchors.left: parent.right 
+
+    }
+    onClicked:{
+            var dadosSalvos = storage.getValue("dados-salvos")
+            if(dadosSalvos){
+                var dadosParse = JSON.parse(dadosSalvos);
+                listaEX.model.clear()
+                 dadosParse.sort(function(a, b) {
+
+                    return a["nome-exame"].localeCompare(b["nome-exame"]);
+                });
+               
+                dadosParse.forEach(function(el) {
+                listaEX.model.append({
+                    title: el["nome-exame"],
+                    body: "<br/>" + el["data-exame"] +                         "<br/>doutor: " + el["nome-doutor"] +
+                          "<br/>ver detalhes..."
+                });
+            });
+                
+            }
+        }
+
+        }
+
+        RadioButton {
+        id: radio2
+        anchors.top: parent.top 
+        anchors.topMargin:100
+        width: 40 
+        height: 30
+        contentItem: Text {
+        text: "mais recentes primeiro"
+        color: "white" 
+        anchors.left: parent.right 
+
+    }
+      onClicked:{
+        function parseData(dataString) {
+        var partes = dataString.split(" ");
+        if (partes.length < 6) { // Agora verificamos se temos pelo menos 6 partes
+            console.error("Formato de data inválido. Certifique-se de que a entrada esteja no formato correto.");
+            return null;
+        }
+        var dia = parseInt(partes[1].replace(",", ""), 10);
+        var mesNomes = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+        var mes = mesNomes.indexOf(partes[3]);
+        if (mes === -1) {
+            console.error("Nome do mês inválido. Verifique se o mês está escrito corretamente.");
+            return null;
+        }
+        var ano = parseInt(partes[5], 10);
+        mes = mes+1
+        var dataISO = ano + "-" + (mes< 10 ? "0" : "") + mes + "-" + (dia < 10 ? "0" : "") + dia;
+        return new Date(dataISO);
+    }
+
+            var dadosSalvos = storage.getValue("dados-salvos")
+            if(JSON.parse(dadosSalvos).length > 1){
+
+                var dadosParse = JSON.parse(dadosSalvos);
+                listaEX.model.clear()
+                 dadosParse.sort(function(a, b) {    
+            
+                var dataA = parseData(a["data-exame"]);
+                var dataB = parseData(b["data-exame"]);
+                return dataA - dataB;
+
+                });
+                console.log(JSON.stringify(dadosParse))
+                dadosParse.forEach(function(el) {
+                listaEX.model.append({
+                    title: el["nome-exame"],
+                    body: "<br/>" + el["data-exame"] +
+                        "<br/>doutor: " + el["nome-doutor"] +
+                        "<br/>ver detalhes..."
+                });
+            });
+                
+            }
+        }
+
+        }
+         RadioButton {
+        id: radio3
+        anchors.top: parent.top 
+        anchors.topMargin:150
+        width: 40 
+        height: 30
+        contentItem: Text {
+        text: "menos recentes primeiro"
+        color: "white" 
+        anchors.left: parent.right
+
+    }
+    onClicked:{
+    function parseData(dataString) {
+        var partes = dataString.split(" ");
+        if (partes.length < 6) { // Agora verificamos se temos pelo menos 6 partes
+            console.error("Formato de data inválido. Certifique-se de que a entrada esteja no formato correto.");
+            return null;
+        }
+        var dia = parseInt(partes[1].replace(",", ""), 10);
+        var mesNomes = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+        var mes = mesNomes.indexOf(partes[3]);
+        if (mes === -1) {
+            console.error("Nome do mês inválido. Verifique se o mês está escrito corretamente.");
+            return null;
+        }
+        var ano = parseInt(partes[5], 10);
+        mes = mes+1
+        var dataISO = ano + "-" + (mes< 10 ? "0" : "") + mes + "-" + (dia < 10 ? "0" : "") + dia;
+        return new Date(dataISO);
+    }
+
+            var dadosSalvos = storage.getValue("dados-salvos")
+            if(JSON.parse(dadosSalvos).length > 1){
+
+                var dadosParse = JSON.parse(dadosSalvos);
+                listaEX.model.clear()
+                 dadosParse.sort(function(a, b) {    
+            
+                var dataA = parseData(a["data-exame"]);
+                var dataB = parseData(b["data-exame"]);
+                return dataB - dataA;
+
+                });
+                console.log(JSON.stringify(dadosParse))
+                dadosParse.forEach(function(el) {
+                listaEX.model.append({
+                    title: el["nome-exame"],
+                    body: "<br/>" + el["data-exame"] +
+                        "<br/>doutor: " + el["nome-doutor"] +
+                        "<br/>ver detalhes..."
+                });
+            });
+                
+            }
+        
+        }
+        }
+         RadioButton {
+        id: radio4
+        anchors.top: parent.top 
+        anchors.topMargin:200
+        width: 40 
+        height: 30
+        contentItem: Text {
+        text: "por doutor"
+        color: "white"
+        anchors.left: parent.right 
+
+    }onClicked:{
+            var dadosSalvos = storage.getValue("dados-salvos")
+            if(dadosSalvos){
+                var dadosParse = JSON.parse(dadosSalvos);
+                listaEX.model.clear()
+                 dadosParse.sort(function(a, b) {
+
+                    return a["nome-doutor"].localeCompare(b["nome-doutor"]);
+                });
+               
+                dadosParse.forEach(function(el) {
+                listaEX.model.append({
+                    title: el["nome-exame"],
+                    body: "<br/>" + el["data-exame"] +                         "<br/>doutor: " + el["nome-doutor"] +
+                          "<br/>ver detalhes..."
+                });
+            });
+                
+            }
+        }   
+
+
+    
+
+        }
     }
     }
 
@@ -171,14 +400,36 @@ App{
                 iconType: IconType.pencil
                 backgroundColor: "green"
                 onClicked:{
-
+                    adicionarFlag.adcFlag = false
                     var dados = storage.getValue("dados-salvos")
+       
                     if(dados){
                         var parseDados = JSON.parse(dados)
-  
-                        var obs = parseDados[model.index]["observacoes"]
-                        nomeExame.text = parseDados[model.index]["nome-exame"]
-                        nomeDoutor.text = parseDados[model.index]["nome-doutor"]
+                        pagina.modeloSalvo = model.index
+                        
+                        listaEX.model.clear()
+                        radio1.checked = false 
+                        radio2.checked = false 
+                        radio3.checked = false 
+                        radio4.checked = false
+
+                        for (var i = 0; i < parseDados.length; ++i) {
+                        listaEX.model.append({title: parseDados[i]["nome-exame"],
+                body:"<br/>"+parseDados[i]["data-exame"]+
+                            "<br/>doutor: "+parseDados[i]["nome-doutor"] +
+                            "<br/>ver detalhes..."
+        
+                    });
+                    }
+                        var obs = parseDados[pagina.modeloSalvo]["observacoes"]
+                        nomeExame.text = parseDados[pagina.modeloSalvo]["nome-exame"]
+                        nomeDoutor.text = parseDados[pagina.modeloSalvo]["nome-doutor"]
+                        fileDialog.selectedFile = parseDados[pagina.modeloSalvo]["caminho-pdf"]
+
+                        if(fileDialog.selectedFile != undefined){
+                            image.text =  fileDialog.selectedNameFilter.name
+                        }
+
                         observacoesExame.text = obs
 
                     }else{
@@ -215,7 +466,31 @@ App{
                 MouseArea {
                   anchors.fill: parent
                   onClicked:{
-                    console.log(model.index)
+                    var dados = storage.getValue("dados-salvos")
+                    if(dados){
+                        var parseDados = JSON.parse(dados)
+                        pagina.modeloSalvo = model.index
+                        
+                        listaEX.model.clear()
+                        radio1.checked = false 
+                        radio2.checked = false 
+                        radio3.checked = false 
+                        radio4.checked = false
+
+                        for (var i = 0; i < parseDados.length; ++i) {
+                        listaEX.model.append({title: parseDados[i]["nome-exame"],
+                body:"<br/>"+parseDados[i]["data-exame"]+
+                            "<br/>doutor: "+parseDados[i]["nome-doutor"] +
+                            "<br/>ver detalhes..."
+        
+                    });
+    
+                }
+                textoPopup3.text = listaEX.model.get(pagina.modeloSalvo).title
+                observacoesExamePopup3.text = parseDados[pagina.modeloSalvo]["observacoes"]
+                fileDialog.selectedFile = parseDados[pagina.modeloSalvo]["caminho-pdf"]
+                popup3.open()
+                }
                   }
                 }
                 font.pixelSize: 18
@@ -257,11 +532,66 @@ Rectangle{
    color: "gray"
     onClicked:{
     adcFlag = true
+    nomeExame.text = ""
+    nomeDoutor.text = ""
+    image.text = "nenhum arquivo selecionado"
+    observacoesExame.text = ""
     popup.open()
    }
 
  }  
-}Popup {
+}Popup{
+    id:popup3
+    x: 50
+    y: 100
+    width: 300
+    height: 450
+    modal: true
+    focus: true
+    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+        background: Rectangle {
+        border.color: "gray"
+        radius: 20
+        color: "black"
+    }
+    AppText{
+        id:textoPopup3
+        text: "" 
+        color: "white"
+        anchors.top: parent.top
+        anchors.topMargin:20
+        anchors.horizontalCenter: parent.horizontalCenter
+    
+    }
+    AppTextField{
+        id:observacoesExamePopup3
+        anchors.top: parent.top
+        anchors.topMargin:100
+        placeholderColor: "gray"
+        textColor: "white"
+        underlineColor: "white"
+        width: parent.width 
+        font: roboto.font
+        text:""
+        readOnly: true
+
+    }
+        AppButton{
+        id:verpdf
+        text:"ver pdf"
+        anchors.top:parent.top 
+        anchors.topMargin: 200
+        onClicked: {fileDialog.open()}
+        radius: 40
+        anchors.horizontalCenter: parent.horizontalCenter 
+        backgroundColor: "#4a4a4a"
+        backgroundColorPressed: "gray"
+        
+}
+
+        }
+
+Popup {
         
     id: popup
     x: 50
@@ -383,10 +713,9 @@ Rectangle{
             var template = {"nome-exame":nomeExame.text,"data-exame":dataEscolhida,"nome-doutor":nomeDoutor.text,"observacoes":observacoesExame.text,"caminho-pdf":fileDialog.selectedFile}
             if(adicionarFlag.adcFlag == true){
             dadosParse.push(template)
-            adicionarFlag.adcFlag = false
 
             }else{
-            dadosParse.splice(listaEX.model.index, 1, template)
+            dadosParse.splice(pagina.modeloSalvo, 1, template)
             }
             listaEX.model.clear()
             storage.clearAll()
@@ -410,7 +739,7 @@ Rectangle{
             storage.clearAll()
             storage.setValue("dados-salvos",JSON.stringify(pegarSalvos))
             listaEX.model.append({title: nomeExame.text,
-           body:"<br/>"+dataExame.selectedDate.toLocaleDateString()+
+           body:"<br/>"+dataExame.selectedDate+
                "<br/>doutor: "+nomeDoutor.text +
                "<br/>ver detalhes..."
  
