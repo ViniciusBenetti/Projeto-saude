@@ -122,40 +122,7 @@ App{
          iconType: IconType.search
          color: "gray"
          anchors.left: textoedit.right
-         onClicked:{
-            var dados = storage.getValue("dados-salvos")
-       
-                    if(JSON.parse(dados).length > 1){
-                        var parseDados = JSON.parse(dados)
-                        
-                        listaEX.model.clear()
-                        radio1.checked = false 
-                        radio2.checked = false 
-                        radio3.checked = false 
-                        radio4.checked = false
-
-                        for (var i = 0; i < parseDados.length; ++i) {
-                        listaEX.model.append({title: parseDados[i]["nome-exame"],
-                body:"<br/>"+parseDados[i]["data-exame"]+
-                            "<br/>doutor: "+parseDados[i]["nome-doutor"] +
-                            "<br/>ver detalhes..."
         
-                    });
-                    }
-               for (var i = 0; i < parseDados.length; ++i) {
-                    var item = listaEX.model.get(i);
-                    if(item.title != textoedit.text){
-
-                        listaEX.itemAt(i,0).visible = false;
-                    }
-                    if(item.title == textoedit.text){
-                       listaEX.itemAt(i,0).visible = true;
-                    }
-    
-                }
-                }
-            
-         }
     }
 
 }Popup{
@@ -386,12 +353,16 @@ App{
     anchors.bottom: parent.bottom
     model: ListModel {}
     delegate: Rectangle {
-        id: retangulo
-        width: parent.width
+        visible: shouldShowItem(title)
+        width: listaEX.width
+        layer.enabled: true
         height: 150
         color: "#4a4a4a"
 
-        
+
+     function shouldShowItem(itemTitle) {
+    return textoedit.text === "" || itemTitle === textoedit.text
+}   
 
         SwipeOptionsContainer {
             anchors.fill: parent
