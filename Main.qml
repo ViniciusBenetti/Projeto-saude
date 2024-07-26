@@ -19,12 +19,11 @@ App{
         var item = storage.getValue("dados-salvos")
         if(item){
             var dadosParse =  JSON.parse(item)
-            console.log(item)
             
             for (var i = 0; i < dadosParse.length; ++i) {
                 listaEX.model.append({title: dadosParse[i]["nome-exame"],
            body:"<br/>"+dadosParse[i]["data-exame"]+
-                     "<br/>doutor: "+dadosParse[i]["nome-doutor"] +
+                     "<br/>doutor(a): "+dadosParse[i]["nome-doutor"] +
                      "<br/>ver detalhes..."
  
             });
@@ -162,7 +161,7 @@ App{
         anchors.top: parent.top 
         anchors.topMargin:50
         contentItem: Text {
-        text: "por exame"
+        text: "nome do exame(A-Z)"
         color: "white" 
         anchors.left: parent.right 
 
@@ -176,7 +175,7 @@ App{
 
                     return a["nome-exame"].localeCompare(b["nome-exame"]);
                 });
-               
+                storage.setValue("dados-salvos",JSON.stringify(dadosParse))
                 dadosParse.forEach(function(el) {
                 listaEX.model.append({
                     title: el["nome-exame"],
@@ -234,7 +233,7 @@ App{
                 return dataA - dataB;
 
                 });
-                console.log(JSON.stringify(dadosParse))
+                storage.setValue("dados-salvos",JSON.stringify(dadosParse))
                 dadosParse.forEach(function(el) {
                 listaEX.model.append({
                     title: el["nome-exame"],
@@ -292,7 +291,7 @@ App{
                 return dataB - dataA;
 
                 });
-                console.log(JSON.stringify(dadosParse))
+                storage.setValue("dados-salvos",JSON.stringify(dadosParse))
                 dadosParse.forEach(function(el) {
                 listaEX.model.append({
                     title: el["nome-exame"],
@@ -313,7 +312,7 @@ App{
         width: 40 
         height: 30
         contentItem: Text {
-        text: "por doutor"
+        text: "nome do doutor(A-Z)"
         color: "white"
         anchors.left: parent.right 
 
@@ -326,7 +325,7 @@ App{
 
                     return a["nome-doutor"].localeCompare(b["nome-doutor"]);
                 });
-               
+                storage.setValue("dados-salvos",JSON.stringify(dadosParse))
                 dadosParse.forEach(function(el) {
                 listaEX.model.append({
                     title: el["nome-exame"],
@@ -371,37 +370,46 @@ App{
                 iconType: IconType.pencil
                 backgroundColor: "green"
                 onClicked:{
+                    function obterIndiceDoMes(mes) {
+                    var meses = [
+                        'janeiro', 'fevereiro', 'março', 'abril',
+                        'maio', 'junho', 'julho', 'agosto',
+                        'setembro', 'outubro', 'novembro', 'dezembro'
+                    ];
+
+                    var indice = meses.findIndex(m => m.toLowerCase() === mes.toLowerCase());
+                    return indice !== -1 ? indice : null;
+
+
+
+}
                     adicionarFlag.adcFlag = false
                     var dados = storage.getValue("dados-salvos")
-       
+                    pagina.modeloSalvo = model.index 
                     if(dados){
                         var parseDados = JSON.parse(dados)
-                        pagina.modeloSalvo = model.index
                         
-                        listaEX.model.clear()
-                        radio1.checked = false 
-                        radio2.checked = false 
-                        radio3.checked = false 
-                        radio4.checked = false
+                        var matchInicioData= listaEX.model.get(model.index).body.indexOf('>') + 1
+                        var matchFimData = listaEX.model.get(model.index).body.indexOf('<',matchInicioData)
+                        var localeData = listaEX.model.get(model.index).body.substring(matchInicioData,matchFimData)
 
-                        for (var i = 0; i < parseDados.length; ++i) {
-                        listaEX.model.append({title: parseDados[i]["nome-exame"],
-                body:"<br/>"+parseDados[i]["data-exame"]+
-                            "<br/>doutor: "+parseDados[i]["nome-doutor"] +
-                            "<br/>ver detalhes..."
+                        var matchInicioDoutor = listaEX.model.get(model.index).body.indexOf('>', matchInicioData) + 11
+                        var matchFimDoutor = listaEX.model.get(model.index).body.indexOf('<', matchInicioDoutor);
+
+                        var doutor = listaEX.model.get(model.index).body.substring(matchInicioDoutor+1, matchFimDoutor);
         
-                    });
-                    }
-                        var obs = parseDados[pagina.modeloSalvo]["observacoes"]
-                        nomeExame.text = parseDados[pagina.modeloSalvo]["nome-exame"]
-                        nomeDoutor.text = parseDados[pagina.modeloSalvo]["nome-doutor"]
-                        fileDialog.selectedFile = parseDados[pagina.modeloSalvo]["caminho-pdf"]
+                    var partes = localeData.match(/(\d{1,2}) de (\w+) de (\d{4})/);
+                    var dia = parseInt(partes[1]);
+                    var mes = partes[2];
+                    var ano = parseInt(partes[3]);
+                    var data = new Date(ano, obterIndiceDoMes(mes), dia);
+     
+    
+                    nomeExame.text = listaEX.model.get(model.index).title
+                    dataExame.selectedDate = data
+                    nomeDoutor.text = doutor
+                    fileDialog.selectedFile = parseDados[model.index]["caminho-pdf"]
 
-                        if(fileDialog.selectedFile != undefined){
-                            image.text =  fileDialog.selectedNameFilter.name
-                        }
-
-                        observacoesExame.text = obs
 
                     }else{
                         console.log("sem obs")
@@ -438,28 +446,14 @@ App{
                   anchors.fill: parent
                   onClicked:{
                     var dados = storage.getValue("dados-salvos")
+                    pagina.modeloSalvo = model.index 
+
                     if(dados){
                         var parseDados = JSON.parse(dados)
-                        pagina.modeloSalvo = model.index
-                        
-                        listaEX.model.clear()
-                        radio1.checked = false 
-                        radio2.checked = false 
-                        radio3.checked = false 
-                        radio4.checked = false
-
-                        for (var i = 0; i < parseDados.length; ++i) {
-                        listaEX.model.append({title: parseDados[i]["nome-exame"],
-                body:"<br/>"+parseDados[i]["data-exame"]+
-                            "<br/>doutor: "+parseDados[i]["nome-doutor"] +
-                            "<br/>ver detalhes..."
-        
-                    });
-    
-                }
-                textoPopup3.text = listaEX.model.get(pagina.modeloSalvo).title
-                observacoesExamePopup3.text = parseDados[pagina.modeloSalvo]["observacoes"]
-                fileDialog.selectedFile = parseDados[pagina.modeloSalvo]["caminho-pdf"]
+   
+                                 
+                textoPopup3.text = listaEX.model.get(model.index).title
+                observacoesExamePopup3.text = parseDados[model.index]["observacoes"]
                 popup3.open()
                 }
                   }
@@ -552,7 +546,15 @@ Rectangle{
         text:"ver pdf"
         anchors.top:parent.top 
         anchors.topMargin: 200
-        onClicked: {fileDialog.open()}
+        onClicked: {
+            var dados = storage.getValue("dados-salvos")
+       
+            if(dados){
+            var parseDados = JSON.parse(dados)
+            console.log(pagina.modeloSalvo)
+            Qt.openUrlExternally(parseDados[pagina.modeloSalvo]["caminho-pdf"])
+            }
+        }
         radius: 40
         anchors.horizontalCenter: parent.horizontalCenter 
         backgroundColor: "#4a4a4a"
@@ -579,7 +581,7 @@ Popup {
         color: "black"
     }
     AppText{
-        text: "tipo de exame:" 
+        text: "nome do exame:" 
         color: "white"
         anchors.top: parent.top
         anchors.topMargin:20
@@ -642,7 +644,7 @@ Popup {
 
     }
     AppText{
-        text: "enviar arquivo: (.pdf):"
+        text: "enviar arquivo:"
         anchors.top:parent.top 
         anchors.topMargin: 430
     }
@@ -667,7 +669,7 @@ Popup {
     }
 
     AppButton{
-    text:"salvar e sair"
+    text:"salvar"
     width: parent.width  
     anchors.top: parent.top  
     anchors.topMargin: 540
@@ -683,20 +685,19 @@ Popup {
             var dadosParse = JSON.parse(pegarSalvos)
             var template = {"nome-exame":nomeExame.text,"data-exame":dataEscolhida,"nome-doutor":nomeDoutor.text,"observacoes":observacoesExame.text,"caminho-pdf":fileDialog.selectedFile}
             if(adicionarFlag.adcFlag == true){
-            dadosParse.push(template)
-
+             dadosParse.push(template)
             }else{
+   
             dadosParse.splice(pagina.modeloSalvo, 1, template)
             }
             listaEX.model.clear()
-            storage.clearAll()
             storage.setValue("dados-salvos",JSON.stringify(dadosParse))
      
 
             for (var i = 0; i < dadosParse.length; ++i) {
                 listaEX.model.append({title: dadosParse[i]["nome-exame"],
            body:"<br/>"+dadosParse[i]["data-exame"]+
-                     "<br/>doutor: "+dadosParse[i]["nome-doutor"] +
+                     "<br/>doutor(a): "+dadosParse[i]["nome-doutor"] +
                      "<br/>ver detalhes..."
  
             });
@@ -707,11 +708,10 @@ Popup {
          var template = {"nome-exame":nomeExame.text,"data-exame":dataEscolhida,"nome-doutor":nomeDoutor.text,"observacoes":observacoesExame.text}
             pegarSalvos.push(template)
             listaEX.model.clear()
-            storage.clearAll()
             storage.setValue("dados-salvos",JSON.stringify(pegarSalvos))
             listaEX.model.append({title: nomeExame.text,
            body:"<br/>"+dataExame.selectedDate+
-               "<br/>doutor: "+nomeDoutor.text +
+               "<br/>doutor(a): "+nomeDoutor.text +
                "<br/>ver detalhes..."
  
             });
