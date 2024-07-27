@@ -179,7 +179,7 @@ App{
                 dadosParse.forEach(function(el) {
                 listaEX.model.append({
                     title: el["nome-exame"],
-                    body: "<br/>" + el["data-exame"] +                         "<br/>doutor: " + el["nome-doutor"] +
+                    body: "<br/>" + el["data-exame"] +                         "<br/>doutor(a): " + el["nome-doutor"] +
                           "<br/>ver detalhes..."
                 });
             });
@@ -238,7 +238,7 @@ App{
                 listaEX.model.append({
                     title: el["nome-exame"],
                     body: "<br/>" + el["data-exame"] +
-                        "<br/>doutor: " + el["nome-doutor"] +
+                        "<br/>doutor(a): " + el["nome-doutor"] +
                         "<br/>ver detalhes..."
                 });
             });
@@ -296,7 +296,7 @@ App{
                 listaEX.model.append({
                     title: el["nome-exame"],
                     body: "<br/>" + el["data-exame"] +
-                        "<br/>doutor: " + el["nome-doutor"] +
+                        "<br/>doutor(a): " + el["nome-doutor"] +
                         "<br/>ver detalhes..."
                 });
             });
@@ -329,7 +329,7 @@ App{
                 dadosParse.forEach(function(el) {
                 listaEX.model.append({
                     title: el["nome-exame"],
-                    body: "<br/>" + el["data-exame"] +                         "<br/>doutor: " + el["nome-doutor"] +
+                    body: "<br/>" + el["data-exame"] +                         "<br/>doutor(a): " + el["nome-doutor"] +
                           "<br/>ver detalhes..."
                 });
             });
@@ -409,6 +409,7 @@ App{
                     dataExame.selectedDate = data
                     nomeDoutor.text = doutor
                     fileDialog.selectedFile = parseDados[model.index]["caminho-pdf"]
+                    observacoesExame.text = parseDados[model.index]["observacoes"]
 
 
                     }else{
