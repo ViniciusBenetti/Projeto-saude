@@ -411,9 +411,8 @@ App{
                     if(parseDados[model.index]["caminho-pdf"] == undefined){
                         image.text = "nenhum arquivo selecionado"         
                     }else{
-                        image.text = fileDialog.selectedNameFilter.name
+                        image.text = "pdf selecionado"
                     }
-                    fileDialog.selectedFile = parseDados[model.index]["caminho-pdf"]
                     observacoesExame.text = parseDados[model.index]["observacoes"]
 
 
