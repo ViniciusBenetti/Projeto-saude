@@ -355,7 +355,7 @@ App{
         visible: shouldShowItem(title)
         width: listaEX.width
         layer.enabled: true
-        height: 150
+        height: 180
         color: "#4a4a4a"
 
 
@@ -408,6 +408,11 @@ App{
                     nomeExame.text = listaEX.model.get(model.index).title
                     dataExame.selectedDate = data
                     nomeDoutor.text = doutor
+                    if(parseDados[model.index]["caminho-pdf"] == undefined){
+                        image.text = "nenhum arquivo selecionado"         
+                    }else{
+                        image.text = fileDialog.selectedNameFilter.name
+                    }
                     fileDialog.selectedFile = parseDados[model.index]["caminho-pdf"]
                     observacoesExame.text = parseDados[model.index]["observacoes"]
 
@@ -502,6 +507,9 @@ Rectangle{
     nomeDoutor.text = ""
     image.text = "nenhum arquivo selecionado"
     observacoesExame.text = ""
+    fileDialog.selectedFile = fileDialog.currentFile
+    dataExame.selectedDate = new Date()
+    
     popup.open()
    }
 
@@ -710,10 +718,10 @@ Popup {
             pegarSalvos.push(template)
             listaEX.model.clear()
             storage.setValue("dados-salvos",JSON.stringify(pegarSalvos))
-            listaEX.model.append({title: nomeExame.text,
-           body:"<br/>"+dataExame.selectedDate+
-               "<br/>doutor(a): "+nomeDoutor.text +
-               "<br/>ver detalhes..."
+            listaEX.model.append({title: pegarSalvos[0]["nome-exame"],
+           body:"<br/>"+pegarSalvos[0]["data-exame"]+
+                     "<br/>doutor(a): "+pegarSalvos[0]["nome-doutor"] +
+                     "<br/>ver detalhes..."
  
             });
 
